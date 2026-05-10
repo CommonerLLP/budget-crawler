@@ -1,0 +1,31 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+budget_crawler/venv/
+budget_crawler/data/
+
+# Crawled/generated artifacts
+data/
+db/*.db
+*.sqlite
+*.sqlite3
+
+# Local scratch/output
+notes/
+*.log
+*.tmp
+*.txt
+
+# Upstream reference clones kept locally, not vendored into this repo.
+cbga_parsers/
+cbga_scrapers/
+
+# Agent operating rules + per-repo memory — never tracked, synced via iCloud
+/CLAUDE.md
+/AGENTS.md
+/CONTEXT.md
+/GEMINI.md
+/WORKING.md
+/memory/
