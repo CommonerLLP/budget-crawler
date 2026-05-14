@@ -19,6 +19,7 @@ notes/
 *.tmp
 *.txt
 !requirements.txt
+!requirements-analysis.txt
 
 # Upstream reference clones kept locally, not vendored into this repo.
 cbga_parsers/
