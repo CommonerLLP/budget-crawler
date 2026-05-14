@@ -41,7 +41,9 @@ cbga_scrapers/
 # Local output / screenshots / generated data
 /screen/
 /local_body_finances.json
-/docs/
+
+# Agent working files inside docs/ — plans are internal; specs are committed
+/docs/superpowers/plans/
 
 # Symlink to external volume
 /data 2
