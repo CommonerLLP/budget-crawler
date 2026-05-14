@@ -1,0 +1,51 @@
+# Citation File Format — https://citation-file-format.github.io/
+# When the budget-crawler repository goes public on GitHub, this file lets
+# Zotero / Mendeley / EndNote and GitHub's "Cite this repository" button
+# render correct citations automatically. Update `version`, `date-released`,
+# and `doi` on each tagged release.
+cff-version: 1.2.0
+title: "budget-crawler: An extraction and analysis pipeline for the Raja Rammohun Roy Library Foundation Annual Reports"
+message: "If you use this software or the data it produces, please cite it as below."
+type: software
+authors:
+  - name: "Commoner"
+    affiliation: "CommonerLLP"
+    website: "https://theright2read.org"
+repository-code: "https://github.com/CommonerLLP/budget-crawler"
+url: "https://theright2read.org"
+abstract: >
+  An extraction, OCR, and analysis pipeline for RRRLF Annual Reports
+  (40th–51st editions, financial years 2011-12 through 2022-23). Produces
+  a canonical JSON of state-level participation, matching-book scheme
+  disbursements, GoI grant lines, and the editorial charts used in
+  the Right to Read campaign’s NML research note.
+# Dual-licensing — set in the repo's LICENSE files, not a single CFF field:
+#   Code               → PolyForm Noncommercial 1.0.0  (see LICENSE)
+#   Data (JSON)        → ODbL 1.0                       (see DATA-LICENSE)
+#   Written analysis / → CC BY-NC-SA 4.0                (see CONTENT-LICENSE)
+#     charts / PDFs
+# CITATION.cff's `license` field uses an SPDX identifier; the closest single
+# match for the code is the line below. The actual licence terms for data
+# and content are in the sibling LICENSE files.
+license: PolyForm-Noncommercial-1.0.0
+keywords:
+  - public libraries
+  - India
+  - RRRLF
+  - National Mission on Libraries
+  - fiscal opacity
+  - budget data extraction
+  - PDF OCR
+  - Right to Read
+version: "0.1.0-pre"
+date-released: "2026-05-12"
+# Once a public release is tagged on GitHub and a Zenodo DOI is minted,
+# add: doi: "10.5281/zenodo.XXXXXXX"
+preferred-citation:
+  type: software
+  title: "budget-crawler: An extraction and analysis pipeline for the Raja Rammohun Roy Library Foundation Annual Reports"
+  authors:
+    - name: "Commoner"
+  year: 2026
+  version: "0.1.0-pre"
+  url: "https://github.com/CommonerLLP/budget-crawler"

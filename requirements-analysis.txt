@@ -1,0 +1,8 @@
+# Heavy analysis/rendering tools — only needed for chart generation and PDF output.
+# Run: pip install -r requirements.txt -r requirements-analysis.txt
+altair==6.1.0
+Markdown==3.10.2
+matplotlib==3.10.9
+seaborn==0.13.2
+vl-convert-python==1.9.0.post1
+weasyprint==68.1

@@ -48,6 +48,25 @@ def ensure_db(db_path=DEFAULT_DB_PATH):
             )
             """
         )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS doc_extraction_probe (
+                doc_id TEXT PRIMARY KEY,
+                probed_at TEXT,
+                file_size_bytes INTEGER,
+                page_count INTEGER,
+                pdftotext_chars_p1 INTEGER,
+                pdftotext_sample TEXT,
+                pdfplumber_tables_p1 INTEGER,
+                has_devanagari INTEGER DEFAULT 0,
+                parser_route TEXT,
+                austerity_score INTEGER DEFAULT 0,
+                extravagance_score INTEGER DEFAULT 0,
+                error TEXT,
+                FOREIGN KEY (doc_id) REFERENCES budget_docs(id)
+            )
+            """
+        )
         _ensure_columns(
             conn,
             "budget_docs",
@@ -147,3 +166,49 @@ def _extension_from_path(path):
         return None
     suffix = Path(path).suffix.lower().lstrip(".")
     return suffix or None
+
+
+def upsert_probe_result(
+    *,
+    doc_id,
+    file_size_bytes,
+    page_count,
+    pdftotext_chars_p1,
+    pdftotext_sample,
+    pdfplumber_tables_p1,
+    has_devanagari,
+    parser_route,
+    austerity_score=0,
+    extravagance_score=0,
+    error,
+    db_path=DEFAULT_DB_PATH,
+):
+    ensure_db(db_path)
+    conn = sqlite3.connect(db_path)
+    try:
+        conn.execute(
+            """
+            INSERT OR REPLACE INTO doc_extraction_probe (
+                doc_id, probed_at, file_size_bytes, page_count,
+                pdftotext_chars_p1, pdftotext_sample, pdfplumber_tables_p1,
+                has_devanagari, parser_route, austerity_score, extravagance_score, error
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                doc_id,
+                datetime.now().isoformat(timespec="seconds"),
+                file_size_bytes,
+                page_count,
+                pdftotext_chars_p1,
+                pdftotext_sample,
+                pdfplumber_tables_p1,
+                1 if has_devanagari else 0,
+                parser_route,
+                austerity_score,
+                extravagance_score,
+                error,
+            ),
+        )
+        conn.commit()
+    finally:
+        conn.close()

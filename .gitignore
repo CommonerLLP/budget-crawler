@@ -14,9 +14,11 @@ db/*.db
 
 # Local scratch/output
 notes/
+.superpowers/
 *.log
 *.tmp
 *.txt
+!requirements.txt
 
 # Upstream reference clones kept locally, not vendored into this repo.
 cbga_parsers/
@@ -28,4 +30,23 @@ cbga_scrapers/
 /CONTEXT.md
 /GEMINI.md
 /WORKING.md
+/MISTAKES.md
 /memory/
+
+# Agent working directories
+/.claude/
+/.brainstorm/
+
+# Local output / screenshots / generated data
+/screen/
+/local_body_finances.json
+/docs/
+
+# Symlink to external volume
+/data 2
+
+# Root-level scratch investigation scripts
+/find_3604.py
+/find_local_data.py
+/extract_libraries.py
+/extract_local_data.py
