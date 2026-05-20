@@ -1,8 +1,18 @@
 # budget-crawler
 
-Automated acquisition of Indian public finance data — Union Government and state budgets — with structured output for fiscal research.
+The Union and state budgets are the arithmetic of who gets what from the political equality the Constitution promised in 1950. That arithmetic is scattered across dozens of Finance Ministry portals, state finance department websites, and RBI publications — in PDFs, XLS files, and JavaScript-rendered pages designed, at best, for the occasional audit and not for longitudinal research.
 
-**Status: `v0.1.0` — alpha. Three sources work reliably. State coverage is early. See [ROADMAP.md](ROADMAP.md) for what is planned.**
+This repository builds the infrastructure to acquire that data reproducibly. Every figure that ships out of this pipeline has a source URL, a download date, and a file hash. The goal is a corpus any researcher, litigator, or journalist can clone, run, and cite.
+
+**Status: `v0.1.0` — alpha. Three sources work reliably. State coverage is early. See [ROADMAP.md](ROADMAP.md).**
+
+---
+
+## What this is for
+
+Budget data in India is used primarily by the institutions that produce it. This project exists for the constituencies the data is *about* — researchers documenting under-provisioning in welfare programmes, journalists tracing allocation cuts across fiscal years, law collectives building evidence on constitutional welfare obligations, movements that need a number that holds up under scrutiny.
+
+The analytical frame is accountability, not audit. The question every scraper is built to answer is not "how much was spent" but "how does the allocation pattern change across years, across states, across welfare heads" — and what does the pattern reveal about which demands the State absorbs versus which it deflects.
 
 ---
 
@@ -18,16 +28,16 @@ Automated acquisition of Indian public finance data — Union Government and sta
 
 | Source | Script | Issue |
 |---|---|---|
-| Uttar Pradesh | `state_budget_scrapers.py` | Only 3 of 6 document sections; only current year pulled |
-| Gujarat | `gujarat_scraper.py` | Wrong source — CMO press PDFs, not Finance Dept grant data |
-| Kerala | `state_budget_scrapers.py` | Dynamic portal; known-sample mode not yet executed |
-| Assam | `state_budget_scrapers.py` | Scraper written for 2017-18 only; not run |
+| Uttar Pradesh | `state_budget_scrapers.py` | 3 of 6 document sections only; current year only — `khand4` (Detailed Demand for Grants), `SND`, `khand6` not yet scraped; no history pull |
+| Gujarat | `gujarat_scraper.py` | Wrong source — CMO press PDFs, not Finance Dept grant data; `finance.gujarat.gov.in` untouched |
+| Kerala | `state_budget_scrapers.py` | Dynamic portal; `--known-sample` mode works for 4 documents |
+| Assam | `state_budget_scrapers.py` | Written for 2017-18 only; not run |
 
 ## What is not working
 
 | Source | Issue |
 |---|---|
-| Tamil Nadu | JS-rendered portal; static XPATH fails silently |
+| Tamil Nadu | JS-rendered portal; static XPATH fails silently; needs Playwright |
 | Madhya Pradesh | `finance.mp.gov.in` timed out during scouting; placeholder only |
 | 29 other states/UTs | No scraper exists |
 
@@ -51,7 +61,7 @@ python budget_crawler/rbi_budgets_scraper.py --dry-run
 # Download current publication
 python budget_crawler/rbi_budgets_scraper.py
 
-# Download a specific archived year (pass the RBI publication page URL)
+# Download a specific archived year
 python budget_crawler/rbi_budgets_scraper.py --url <url> --fiscal-year 2023-24
 ```
 
@@ -74,7 +84,7 @@ python budget_crawler/state_budget_scrapers.py rajasthan --fiscal-year 2025-26
 # Uttar Pradesh 2026-27 (partial)
 python budget_crawler/state_budget_scrapers.py uttar-pradesh --fiscal-year 2026-27
 
-# Kerala known sample (4 documents, works)
+# Kerala known sample (4 documents)
 python budget_crawler/state_budget_scrapers.py kerala --fiscal-year 2025-26 --known-sample
 
 # Dry-run any state before downloading
@@ -97,11 +107,22 @@ db/
   budget_metadata.db          # SQLite index of all downloaded documents (gitignored)
 ```
 
+Financial year is Apr–Mar, recorded as `YYYY-YY` (e.g. `2023-24`). All output column names carry explicit units (`expenditure_cr`, not `expenditure`).
+
+---
+
+## Standards
+
+- **RBI "State Finances: A Study of Budgets"** is the reference for cross-state fiscal time-series. When RBI figures conflict with a state portal figure, the discrepancy is flagged, not silently resolved.
+- Every scraper is safe to re-run: file existence is checked before fetching; skips are logged.
+- Per-host sleep between requests. Government portals are not load-test targets.
+- No Java dependency. PDF parsing uses `pdfplumber`.
+
 ---
 
 ## Notes
 
 - `cbga_parsers/` and `cbga_scrapers/` are upstream CBGA reference clones kept locally. They are gitignored and not vendored.
-- Per-host sleep is set in `scrapping_utils.py`. Do not remove it.
 - Never commit `data/`, `db/`, or `notes/` — they are gitignored for a reason.
-- See [ROADMAP.md](ROADMAP.md) for version milestones and known gaps.
+- See [ROADMAP.md](ROADMAP.md) for version milestones, known gaps, and the path to 1.0.0.
+- See [CHANGELOG.md](CHANGELOG.md) for per-release notes.

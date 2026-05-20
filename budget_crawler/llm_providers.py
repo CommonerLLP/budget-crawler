@@ -3,6 +3,7 @@ Pluggable Intelligence Providers for OBI 2.0.
 Supports Regex (Fast/Free), Ollama (Local LLM), and potentially Cloud APIs.
 """
 import json
+import os
 import re
 import requests
 
@@ -100,7 +101,59 @@ class OllamaProvider(BaseProvider):
         except Exception as e:
             return {"error": str(e), "austerity_score": 0, "extravagance_score": 0, "provider": "ollama:error"}
 
+class OpenRouterProvider(BaseProvider):
+    """Cloud provider using OpenRouter to access open-weights models."""
+    def __init__(self, model="meta-llama/llama-3-8b-instruct"):
+        self.model = model
+        self.api_key = os.environ.get("OPENROUTER_API_KEY")
+        self.url = "https://openrouter.ai/api/v1/chat/completions"
+        if not self.api_key:
+            print("WARNING: OPENROUTER_API_KEY not found in environment.")
+
+    def analyze_signals(self, text):
+        if not self.api_key:
+            return {"error": "Missing API Key", "austerity_score": 0, "extravagance_score": 0, "provider": "openrouter:error"}
+            
+        sample = text[:3000] # Give it enough context for Devanagari
+        prompt = f"""
+        Analyze the following budget text.
+        Identify signals of:
+        1. 'Austerity' (spending cuts, service freezes).
+        2. 'Extravagance' (capital subsidies, investor incentives).
+        
+        Return ONLY a JSON object with two integer scores (0-10) for each category.
+        Format: {{"austerity_score": int, "extravagance_score": int}}
+        
+        TEXT:
+        {sample}
+        """
+        
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "HTTP-Referer": "https://github.com/CommonerLLP/budget-crawler",
+            "X-Title": "CommonerLLP OBI Engine"
+        }
+        
+        payload = {
+            "model": self.model,
+            "messages": [{"role": "user", "content": prompt}],
+            "response_format": {"type": "json_object"}
+        }
+        
+        try:
+            response = requests.post(self.url, headers=headers, json=payload, timeout=60)
+            response.raise_for_status()
+            result = response.json()
+            content = result['choices'][0]['message']['content']
+            data = json.loads(content)
+            data["provider"] = f"openrouter:{self.model}"
+            return data
+        except Exception as e:
+            return {"error": str(e), "austerity_score": 0, "extravagance_score": 0, "provider": "openrouter:error"}
+
 def get_provider(provider_type, **kwargs):
     if provider_type == "ollama":
         return OllamaProvider(**kwargs)
+    elif provider_type == "openrouter":
+        return OpenRouterProvider(**kwargs)
     return RegexProvider()
