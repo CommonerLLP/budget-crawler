@@ -126,6 +126,34 @@ def ensure_db(db_path=DEFAULT_DB_PATH):
             )
             """
         )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS sansad_vacancy_docs (
+                id TEXT PRIMARY KEY,
+                question_number TEXT,
+                house TEXT,
+                session_year TEXT,
+                source_url TEXT,
+                local_path TEXT,
+                last_crawled TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS icds_vacancies (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                doc_id TEXT REFERENCES sansad_vacancy_docs(id),
+                state TEXT NOT NULL,
+                year TEXT NOT NULL,
+                role TEXT NOT NULL, -- 'State HQ', 'DPO', 'CDPO', 'Supervisor', 'AWW', 'AWH'
+                sanctioned INTEGER,
+                in_position INTEGER,
+                vacant INTEGER,
+                extracted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
         conn.commit()
     finally:
         conn.close()

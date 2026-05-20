@@ -1,15 +1,39 @@
-# Budget Crawler
+# budget-crawler
 
-Standalone crawler workspace for Indian budget documents and fiscal tables.
+Automated acquisition of Indian public finance data — Union Government and state budgets — with structured output for fiscal research.
 
-## Current Contents
+**Status: `v0.1.0` — alpha. Three sources work reliably. State coverage is early. See [ROADMAP.md](ROADMAP.md) for what is planned.**
 
-- `budget_crawler/`: local scraper and extraction scripts for RBI and Gujarat budget sources.
-- `data/`: downloaded PDFs/XLS files. Generated output; ignored by git.
-- `db/budget_metadata.db`: local SQLite metadata index. Generated output; ignored by git.
-- `cbga_parsers/` and `cbga_scrapers/`: upstream CBGA reference repositories kept as local references.
+---
 
-## Quick Start
+## What works
+
+| Source | Script | Coverage | Output |
+|---|---|---|---|
+| RBI State Finances | `rbi_budgets_scraper.py` | 5 years (2021–2025 publications), all appendices, all-India | PDF + XLS in `data/rbi/` |
+| Union Budget SBE | `union_budget_scraper.py` | 7 years (2020-21 to 2026-27), Demand No. 101 (MWCD) | XLS in `data/union_budget/` |
+| Rajasthan | `state_budget_scrapers.py` | 2025-26, full document set | PDF in `data/state_budgets/Rajasthan/` |
+
+## What is partially working
+
+| Source | Script | Issue |
+|---|---|---|
+| Uttar Pradesh | `state_budget_scrapers.py` | Only 3 of 6 document sections; only current year pulled |
+| Gujarat | `gujarat_scraper.py` | Wrong source — CMO press PDFs, not Finance Dept grant data |
+| Kerala | `state_budget_scrapers.py` | Dynamic portal; known-sample mode not yet executed |
+| Assam | `state_budget_scrapers.py` | Scraper written for 2017-18 only; not run |
+
+## What is not working
+
+| Source | Issue |
+|---|---|
+| Tamil Nadu | JS-rendered portal; static XPATH fails silently |
+| Madhya Pradesh | `finance.mp.gov.in` timed out during scouting; placeholder only |
+| 29 other states/UTs | No scraper exists |
+
+---
+
+## Quick start
 
 ```bash
 python -m venv .venv
@@ -18,69 +42,66 @@ pip install -r requirements.txt
 python budget_crawler/db_init.py
 ```
 
-## Crawlers
-
-Preview the live RBI State Finances publication without downloading:
+### RBI State Finances
 
 ```bash
+# Preview without downloading
 python budget_crawler/rbi_budgets_scraper.py --dry-run
-```
 
-Download/index the current RBI publication:
-
-```bash
+# Download current publication
 python budget_crawler/rbi_budgets_scraper.py
+
+# Download a specific archived year (pass the RBI publication page URL)
+python budget_crawler/rbi_budgets_scraper.py --url <url> --fiscal-year 2023-24
 ```
 
-If you have a compatible archived RBI annual-publication page, pass it with `--url` and use
-`--fiscal-year` to override the inferred year.
-
-Download/index the known Gujarat CMO budget ebooks:
+### Union Budget Demand for Grants
 
 ```bash
-python budget_crawler/gujarat_cmo_scraper.py
+# Download all archive years for a demand number
+python budget_crawler/union_budget_scraper.py --demand 101 --out data/union_budget
+
+# Dry run
+python budget_crawler/union_budget_scraper.py --demand 101 --dry-run
 ```
 
-## CBGA-derived state scrapers
-
-Assam and Tamil Nadu scraper ports live in `budget_crawler/state_budget_scrapers.py`.
-They keep CBGA's state-specific discovery strategy, but add dry-runs, safer paths,
-and metadata indexing.
-
-Preview Assam's 2017-18 finance document collection:
+### State budget scrapers
 
 ```bash
-python3 budget_crawler/state_budget_scrapers.py assam --fiscal-year 2017-18 --dry-run
+# Rajasthan 2025-26 (works)
+python budget_crawler/state_budget_scrapers.py rajasthan --fiscal-year 2025-26
+
+# Uttar Pradesh 2026-27 (partial)
+python budget_crawler/state_budget_scrapers.py uttar-pradesh --fiscal-year 2026-27
+
+# Kerala known sample (4 documents, works)
+python budget_crawler/state_budget_scrapers.py kerala --fiscal-year 2025-26 --known-sample
+
+# Dry-run any state before downloading
+python budget_crawler/state_budget_scrapers.py <state> --fiscal-year <year> --dry-run
 ```
 
-Preview Tamil Nadu's current demand/publication page:
+Available state choices: `assam`, `tamil-nadu`, `kerala`, `uttar-pradesh`, `rajasthan`, `madhya-pradesh`
 
-```bash
-python3 budget_crawler/state_budget_scrapers.py tamil-nadu --fiscal-year 2025-26 --dry-run
+---
+
+## Data layout
+
+```
+data/                         # gitignored — lives on external volume or local disk
+  rbi/                        # RBI State Finances publications
+  union_budget/               # Union Budget SBE XLS files
+  state_budgets/              # State Finance Dept documents
+  min_wage/                   # State Labour Dept minimum wage schedules
+db/
+  budget_metadata.db          # SQLite index of all downloaded documents (gitignored)
 ```
 
-For the older CBGA Tamil Nadu menu layout, use:
+---
 
-```bash
-python3 budget_crawler/state_budget_scrapers.py tamil-nadu --fiscal-year 2017-18 --legacy --dry-run
-```
+## Notes
 
-Remove `--dry-run` to download and index files. Use `--limit N` for small reproduction runs.
-If a government listing page is unreachable, use `--known-sample` to print or
-download a small documented source sample:
-
-```bash
-python3 budget_crawler/state_budget_scrapers.py assam --fiscal-year 2017-18 --known-sample --dry-run
-python3 budget_crawler/state_budget_scrapers.py tamil-nadu --fiscal-year 2025-26 --known-sample --dry-run
-```
-
-Additional state scouts:
-
-```bash
-python3 budget_crawler/state_budget_scrapers.py kerala --fiscal-year 2025-26 --known-sample --dry-run
-python3 budget_crawler/state_budget_scrapers.py uttar-pradesh --fiscal-year 2026-27 --dry-run
-python3 budget_crawler/state_budget_scrapers.py rajasthan --fiscal-year 2025-26 --dry-run
-python3 budget_crawler/state_budget_scrapers.py madhya-pradesh --fiscal-year 2025-26 --dry-run
-```
-
-The current SQLite index was migrated out of the Sansad repo with the harvested data. Before committing code, keep generated data and local virtual environments out of git.
+- `cbga_parsers/` and `cbga_scrapers/` are upstream CBGA reference clones kept locally. They are gitignored and not vendored.
+- Per-host sleep is set in `scrapping_utils.py`. Do not remove it.
+- Never commit `data/`, `db/`, or `notes/` — they are gitignored for a reason.
+- See [ROADMAP.md](ROADMAP.md) for version milestones and known gaps.

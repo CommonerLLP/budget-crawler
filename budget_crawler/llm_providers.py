@@ -53,6 +53,24 @@ class OllamaProvider(BaseProvider):
         self.model = model
         self.url = url
 
+    def generate(self, prompt, format=None):
+        """General purpose generation."""
+        try:
+            payload = {
+                "model": self.model,
+                "prompt": prompt,
+                "stream": False,
+            }
+            if format:
+                payload["format"] = format
+                
+            response = requests.post(self.url, json=payload, timeout=60)
+            response.raise_for_status()
+            result = response.json()
+            return result.get('response', '')
+        except Exception as e:
+            raise RuntimeError(f"Ollama generation failed: {e}")
+
     def analyze_signals(self, text):
         # We only send a sample to stay within local context limits
         sample = text[:2000]
