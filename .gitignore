@@ -53,3 +53,4 @@ cbga_scrapers/
 /find_local_data.py
 /extract_libraries.py
 /extract_local_data.py
+.env
