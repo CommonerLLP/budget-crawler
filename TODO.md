@@ -4,6 +4,7 @@
 
 # Current
 
+- [ ] **GFR 2017 PDF parsing:** Acquire the General Financial Rules 2017 PDF and parse its structural rules into the LMMHA spatial parser.
 - [ ] **Fiscal-federal map: cross-check top-6 specimens** (TN/KA/MH/MP/Assam/Gujarat) vs RBI State Finances / state Budgets; log both sources → `verified_facts.md`. (Map: `notes/fiscal_federal_extraction_map.md`.)
 - [ ] **Pull primary-doc text:** BBMP appendix d5 (slab tables, ₹26,352cr capex); MH Cabinet excise order; MP borrowing/FRBM line.
 - [ ] **RTI:** Karnataka state-BCG contract/GO; TN-BCG & Telangana Rising 2047 scopes/fees; West investment-promotion consultancies.
@@ -35,6 +36,7 @@
 
 # Archive
 
+- [x] 2026-06-24 — Rebuilt LMMHA PDF parser with precise spatial X-coordinates, generated clean JSON and fixed PyLODE vocpub profile HTML rendering bugs.
 - [x] 2026-06-24 — Created 5-Star Semantic Web Linked Open Data (LOD) pipeline for LMMHA (`publicfinance/lmmha_skos_exporter.py`).
 - [x] 2026-06-24 — Set up `.github/workflows/publish_lod.yml` to publish LMMHA ontology to GitHub Pages.
 - [x] 2026-06-24 — Deleted obsolete `gujarat_scraper.py` and updated README/ROADMAP for `finance_gujarat_scraper.py`.
